@@ -36,6 +36,12 @@
         .nav-link:hover {
             background: #0056b3;
         }
+        .user-info {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            color: white;
+        }
         .news-section {
             width: 80%;
             margin: 20px auto;
@@ -63,8 +69,8 @@
             gap: 10px;
         }
         .news-image {
-            width: 100px; /* Задайте нужный размер для фото */
-            height: 100px; /* Задайте нужный размер для фото */
+            width: 100px;
+            height: 100px;
             object-fit: cover;
             border-radius: 5px;
         }
@@ -83,11 +89,22 @@
         .add-news-button:hover {
             background: #0056b3;
         }
+        .login-form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Главная страница</h1>
+        <h1>Добро пожаловать на главную страницу!</h1>
+
+    {% if session.user_id %}
+        <p>Здравствуйте, {{ session.user_fullname }}!</p>
+        <a href="{{ url_for('logout') }}">Выход</a>  <!-- Кнопка выхода -->
+    {% else %}
+        <a href="{{ url_for('login') }}">Вход в систему</a>  <!-- Ссылка на вход -->
+    {% endif %}
     </header>
 
     <div class="navigation">
@@ -96,12 +113,11 @@
         <a href="courses" class="nav-link">Курсы</a>
         <a href="emotional_tracker" class="nav-link">Эмоциональный трекер</a>
     </div>
-
     <div class="news-section">
         <h2>Новости</h2>
-
         <div class="news-block">
             <div class="news-date">01.10.2023</div>
+
             <div class="news-content">Запущен новый курс по программированию.</div>
             <div class="news-images">
                 <img src="/static/img/photo1.jpg" alt="Фото 1" class="news-image">
@@ -109,7 +125,6 @@
                 <img src="/static/img/photo3.jpg" alt="Фото 3" class="news-image">
             </div>
         </div>
-
         <div class="news-block">
             <div class="news-date">05.10.2023</div>
             <div class="news-content">Внесены изменения в расписание занятий.</div>
@@ -118,18 +133,14 @@
                 <img src="/static/img/photo5.jpg" alt="Фото 5" class="news-image">
             </div>
         </div>
-
         <div class="news-block">
             <div class="news-date">10.10.2023</div>
             <div class="news-content">Запланировано первое онлайн-мероприятие.</div>
             <div class="news-images">
-
                 <img src="/static/img/photo6.jpg" alt="Фото 6" class="news-image">
             </div>
         </div>
     </div>
-
     <button class="add-news-button">Добавить новость</button>
-
 </body>
 </html>
