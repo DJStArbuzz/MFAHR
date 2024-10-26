@@ -8,60 +8,6 @@
     <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-
-
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Таблица пользователя</h1>
-        <div class="auth-buttons">
-            <form action="/logout" method="POST">
-                <button type="submit" class="auth-button">Выход</button>
-            </form>
-        </div>
-    </header>
-
-         <div class="navigation">
-        <a href="index" class="nav-link"><i class="fas fa-home"></i> Главная</a>
-        <a href="user_table" class="nav-link"><i class="fas fa-user"></i> Личный кабинет</a>
-        <a href="diary" class="nav-link"><i class="fas fa-book"></i> Дневник</a>
-        <a href="courses" class="nav-link"><i class="fas fa-graduation-cap"></i> Курсы</a>
-        <a href="emotional_tracker" class="nav-link"><i class="fas fa-smile"></i> Эмоциональный трекер</a>
-                {% if session.user_id %}
-            <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
-        {% else %}
-            <a href="{{ url_for('login') }}" class="nav-link">Вход в систему</a>
-        {% endif %}
-    </div>
-
-    <div class="profile">
-        <img src={{icon}} alt="Аватар" class="avatar">
-        <div class="profile-details">
-            <h2>{{ user_fullname }}</h2>
-            <p>Email: {{ user_email }}</p>
-            <a href="/edit_profile" class="edit-button">Редактировать профиль</a>
-        </div>
-    </div>
-
-    <div class="news-section">
-        <h3>Последние новости</h3>
-        <div class="news-list">
-            {% for news_item in news %}
-                <div class="news-card">
-                    <h4>{{ news_item.name }}</h4>
-                    <p>{{ news_item.content }}</p>
-                    <small>{{ news_item.date }}</small>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>&copy; 2023 Ваш сайт. Все права защищены.</p>
-    </div>
-
-    <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -72,11 +18,10 @@
             background-repeat: no-repeat;
         }
         header {
-            background: rgba(51, 51, 51, 0.8);
+            background: #007bff;
             color: #fff;
-            padding: 10px 0;
-            text-align: center;
-            border-radius: 10px;
+            padding: 10px 20px;
+            text-align: left; /* Выравнивание текста влево */
         }
         .navigation {
             margin: 20px 0;
@@ -102,10 +47,13 @@
             margin-bottom: 20px;
         }
         .avatar {
-            width: 100px;
-            height: 100px;
+            width: 300px; /* Увеличенный размер аватара */
+            height: 300px; /* Увеличенный размер аватара */
             border-radius: 50%;
             margin-right: 20px;
+        }
+        .profile-details {
+            font-size: 1.2em; /* Увеличенный шрифт для профиля */
         }
         .edit-button {
             display: inline-block;
@@ -146,5 +94,54 @@
             margin-top: 20px;
         }
     </style>
+</head>
+<body>
+    <header>
+        <h1><center>Личный кабинет</center></h1>
+        <div class="auth-buttons">
+        </div>
+    </header>
+
+    <div class="navigation">
+        <a href="index" class="nav-link"><i class="fas fa-home"></i> Главная</a>
+        <a href="user_table" class="nav-link"><i class="fas fa-user"></i> Личный кабинет</a>
+        <a href="diary" class="nav-link"><i class="fas fa-book"></i> Дневник</a>
+        <a href="courses" class="nav-link"><i class="fas fa-graduation-cap"></i> Курсы</a>
+        <a href="emotional_tracker" class="nav-link"><i class="fas fa-smile"></i> Эмоциональный трекер</a>
+        {% if session.user_id %}
+            <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-link">Вход в систему</a>
+        {% endif %}
+    </div>
+
+    <div class="profile">
+        <img src="{{ user_icon }}" alt="Аватар" class="avatar">
+        <div class="profile-details">
+            <h2>{{ user_fullname }}</h2>
+            <p>Email: {{ user_email }}</p>
+            <p>Телефон: {{ user_phone }}</p>
+            <p>Возраст: {{ user_age }}</p> <!-- Новая информация о пользователе -->
+            <p>Город: {{ user_city }}</p> <!-- Новая информация о пользователе -->
+            <a href="/edit_table" class="edit-button">Редактировать профиль</a>
+        </div>
+    </div>
+
+    <div class="news-section">
+        <h3>Последние новости</h3>
+        <div class="news-list">
+            {% for news_item in news %}
+                <div class="news-card">
+                    <h4>{{ news_item.name }}</h4>
+                    <p>{{ news_item.content }}</p>
+                    <small>{{ news_item.date }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; <center>2024 MFAHR. Все права защищены.</center></p>
+    </footer>
 </body>
 </html>

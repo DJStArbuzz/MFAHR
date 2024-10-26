@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактировать новость</title>
+    <title>Редактировать аккаунт</title>
     <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
     <style>
         body {
@@ -64,19 +64,34 @@
     </style>
 </head>
 <body>
-    <h1>Редактировать новость</h1>
+    <h1>Редактирование аккаунта</h1>
     <form method="POST">
-        <label for="date">Дата:</label>
-        <input type="text" id="date" name="date" value="{{ news['date'] }}" required>
+        <label for="last_name">Фамилия:</label>
+        <input type="text" id="last_name" name="last_name" value="{{user_item['last_name'] }}" required>
 
-        <label for="content">Содержание:</label>
-        <textarea id="content" name="content" required>{{ news['content'] }}</textarea>
+        <label for="first_name">Имя:</label>
+        <input type="text" id="first_name" name="first_name" value="{{ user_item['first_name'] }}" required>
 
-        <label for="image">Изображение (URL):</label>
-        <input type="text" id="image" name="image" value="{{ news['image'] }}">
+        <label for="patronymic">Отчество:</label>
+        <input type="text" id="patronymic" name="patronymic" value="{{ user_item['patronymic'] }}" required>
 
-        <label for="name">Наименование:</label>
-        <textarea id="name" name="name" required>{{ news['name'] }}</textarea>
+        <label for="mail">Электронная почта:</label>
+        <input type="text" id="mail" name="mail" value="{{ user_item['mail'] }}" required>
+
+        <label for="password">Пароль:</label>
+        <input type="text" id="password" name="password" value="{{ user_item['password'] }}" required>
+
+        <label for="icon">Аватар:</label>
+        <input type="text" id="icon" name="icon" value="{{ user_item['icon'] }}" required>
+
+        <label for="phone">Телефон:</label>
+        <input type="text" id="phone" name="phone" value="{{ user_item['phone'] }}" required>
+
+        <label for="age">Возраст:</label>
+        <input type="text" id="age" name="age" value="{{ user_item['age'] }}" required>
+
+        <label for="city">Город:</label>
+        <input type="text" id="city" name="city" value="{{ user_item['city'] }}" required>
 
         <button type="submit">Сохранить изменения</button>
     </form>
