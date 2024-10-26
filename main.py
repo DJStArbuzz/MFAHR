@@ -4,18 +4,31 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Замени на свой секретный ключ
 
-
 # Функция для получения соединения с базой данных
 def get_db_connection():
     conn = sqlite3.connect('db/school.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-
 @app.route('/')
 @app.route('/index')
 def home():
-    return render_template('index.html')  # Главная страница
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Проверка авторизации пользователя
+
+    user_id = session['user_id']  # Получаем ID пользователя из сессии
+    conn = get_db_connection()
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+
+    conn2 = get_db_connection()
+    news_list = conn2.execute('SELECT * FROM news ORDER BY date DESC').fetchall()
+    conn2.close()
+    print(user['role'])
+    if user:
+        return render_template('index.html', user=user, news=news_list)
+    else:
+        return redirect(url_for('login'))  # Если пользователь не найден
 
 
 @app.route('/diary')
@@ -24,42 +37,98 @@ def diary():
         return redirect(url_for('login'))  # Проверка авторизации пользователя
 
     user_id = session['user_id']  # Получаем ID пользователя из сессии
+
     conn = get_db_connection()
+    conn2 = get_db_connection()
 
-    # Получаем список предметов и оценок пользователя
-    subjects_grades = conn.execute('''
-        SELECT s.subject_name, m.mark
-        FROM subject s
-        JOIN marks_all m ON s.subject_id = m.subject_id
-        WHERE m.user_id = ?
-    ''', (user_id,)).fetchall()
-
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, role, subjects FROM users WHERE id = ?',
+                        (user_id,)).fetchone()
+    role = user['role']
     conn.close()
+    print(role)
+    user_subjects = user['subjects']
+    print(user_subjects)
 
-    # Обработка данных для передачи в шаблон
-    grades_data = {}
+    if (role == 4):
+        # Получаем список предметов и оценок пользователя
+        subjects_grades = conn2.execute('''
+                SELECT s.subject_name, m.mark
+                FROM subject s
+                JOIN marks_all m ON s.subject_id = m.subject_id
+                WHERE m.user_id = ?
+            ''', (user_id,)).fetchall()
 
-    for row in subjects_grades:
-        subject_name = row['subject_name']
-        mark = row['mark']
-        if subject_name not in grades_data:
-            grades_data[subject_name] = []
-        grades_data[subject_name].append(mark)
+        conn2.close()
 
-    # Подсчет среднего значения для каждого предмета
-    average_grades = {subject: sum(marks) / len(marks) if marks else 0 for subject, marks in grades_data.items()}
+        # Обработка данных для передачи в шаблон
+        grades_data = {}
 
-    return render_template('diary.html', grades_data=grades_data, average_grades=average_grades)
+        for row in subjects_grades:
+
+            subject_name = row['subject_name']
+            mark = row['mark']
+            if subject_name not in grades_data:
+                grades_data[subject_name] = []
+            grades_data[subject_name].append(mark)
+
+        # Подсчет среднего значения для каждого предмета
+        average_grades = {subject: sum(marks) / len(marks) if marks else 0 for subject, marks in grades_data.items()}
+
+        return render_template('diary.html', grades_data=grades_data, average_grades=average_grades, role=user['role'])
+    elif (role == 3):
+        # Получаем список учеников, которые числятся у него на предметах
+        student_grades = {}
+
+        # Получаем subject_id
+        subject_row = conn2.execute('SELECT subject_id FROM subject WHERE teacher_id = ?', (user_id,)).fetchone()
+
+        if subject_row is None:
+            # Если предмет не найден, возвращаем пустой словарь
+            return render_template('diaryTeacher.html', student_grades={})
+
+        subject_id = subject_row['subject_id']  # Извлекаем subject_id
+        conn3 = get_db_connection()
+
+        # Ищем студентов, у которых в поле subjects есть subject_id
+        studentsT = conn3.execute('''
+            SELECT u.id, u.last_name, u.first_name
+            FROM users u
+            WHERE u.subjects LIKE ?
+        ''', (f'%{subject_id}%',)).fetchall()
+
+        # Для каждого студента получаем его оценки
+        for student in studentsT:
+            student_full_name = f"{student['last_name']} {student['first_name']}"
+            user_id = student['id']
+
+            # Получаем оценки для данного студента по subject_id
+            marks = conn3.execute('''
+                SELECT mark FROM marks_all 
+                WHERE user_id = ? AND subject_id = ?
+            ''', (user_id, subject_id)).fetchall()
+
+            # Сохраняем оценки в словаре
+            student_grades[student_full_name] = [mark['mark'] for mark in marks]
+
+        conn2.close()
+        conn3.close()
+        # Передача данных в шаблон
+        average_grades = {subject: sum(marks) / len(marks) if marks else 0 for subject, marks in student_grades.items()}
+        return render_template('diary.html', grades_data=student_grades, average_grades=average_grades, role=user['role'])
+
+    # Если роль не равна 3, перенаправляем на главную страницу
+    return redirect(url_for('home'))
+
 
 @app.route('/emotional_tracker')
 def emotional_tracker():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Проверка авторизации
     return render_template('emotional_tracker.html')  # Страница Эмоционального трекера
-
 
 @app.route('/courses')
 def courses():
     return render_template('courses.html')  # Страница Учебных курсов
-
 
 # Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
@@ -93,7 +162,6 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -110,10 +178,9 @@ def login():
             return redirect(url_for('home'))
         else:
             error_message = "Неверный email или пароль"
-            return render_template('login.html', error_message=error_message)  # Передаем сообщение об ошибке
+            return render_template('login.html', error_message=error_message)
 
-    return render_template('login.html')  # Возврат формы входа при GET-запросе
-
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -125,24 +192,107 @@ def logout():
 @app.route('/user_table')
 def user_table():
     if 'user_id' not in session:
-        return redirect(url_for('login'))  # Перенаправление на страницу входа, если пользователь не авторизовался
+        return redirect(url_for('login'))
 
     user_id = session['user_id']
     conn = get_db_connection()
-    user = conn.execute('SELECT last_name, first_name, mail FROM users WHERE id = ?', (user_id,)).fetchone()
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, icon FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
 
     if user:
-        user_fullname = f"{user['last_name']} {user['first_name']}"
-        print(user_fullname)
+        user_fullname = f"{user['last_name']} {user['first_name']} {user['patronymic']}"
         user_email = user['mail']
-        return render_template('user_table.html', user_fullname=user_fullname, user_email=user_email)
+        icon = user['icon']
+        return render_template('user_table.html', user_fullname=user_fullname, user_email=user_email, icon=icon)
     else:
         return redirect(url_for('home'))
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/add_news', methods=['GET', 'POST'])
+def add_news():
+    print(session.get('role'))
+    user_id = session['user_id']  # Получаем ID пользователя из сессии
+    conn = get_db_connection()
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, role FROM users WHERE id = ?',
+                        (user_id,)).fetchone()
+    conn.close()
+    if 'user_id' not in session or user['role'] != 0:
+        return redirect(url_for('home'))  # Только для администраторов
+
+    if request.method == 'POST':
+        date = request.form.get('date')
+        content = request.form.get('content')
+        image = request.form.get('image')  # Путь к изображению
+        name = request.form.get('name')
+
+        conn = get_db_connection()
+        conn.execute('INSERT INTO news (date, content, image, name) VALUES (?, ?, ?, ?)', (date, content, image, name))
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for('home'))
+
+    return render_template('add_news.html')
+
+
+@app.route('/delete_news/<int:news_id>')
+def delete_news(news_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+
+    if user is None or user['role'] != 0:  # Не администратор
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    conn.execute('DELETE FROM news WHERE id = ?', (news_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('home'))
+
+
+@app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
+def edit_news(news_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    print(user['role'])
+    if user is None or user['role'] != 0:  # Не администратор
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    if request.method == 'POST':
+        date = request.form.get('date')
+        content = request.form.get('content')
+        image = request.form.get('image')
+        name = request.form.get('name')
+        conn.execute('UPDATE news SET date = ?, content = ?, image = ?, name = ? WHERE id = ?', (date, content, image, name, news_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('home'))
+
+    news_item = conn.execute('SELECT * FROM news WHERE id = ?', (news_id,)).fetchone()
+    conn.close()
+
+    return render_template('edit_news.html', news=news_item)
+
+
+@app.route('/news')
+def news():
+    conn = get_db_connection()
+    news_list = conn.execute('SELECT * FROM news ORDER BY date DESC').fetchall()
+    conn.close()
+    return render_template('news.html', news=news_list)
+
 
 
 if __name__ == '__main__':
