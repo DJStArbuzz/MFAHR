@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Таблица пользователя</title>
- <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
-</head>
+    <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
 
+
+    </style>
+</head>
 <body>
     <header>
         <h1>Таблица пользователя</h1>
@@ -17,19 +21,130 @@
             </form>
         </div>
     </header>
-    <div class="navigation">
-        <a href="/index" class="nav-link">Главная</a>
-        <a href="/diary" class="nav-link">Дневник</a>
-        <a href="/courses" class="nav-link">Курсы</a>
-        <a href="/emotionaltracker" class="nav-link">Эмоциональный трекер</a>
+
+         <div class="navigation">
+        <a href="index" class="nav-link"><i class="fas fa-home"></i> Главная</a>
+        <a href="user_table" class="nav-link"><i class="fas fa-user"></i> Личный кабинет</a>
+        <a href="diary" class="nav-link"><i class="fas fa-book"></i> Дневник</a>
+        <a href="courses" class="nav-link"><i class="fas fa-graduation-cap"></i> Курсы</a>
+        <a href="emotional_tracker" class="nav-link"><i class="fas fa-smile"></i> Эмоциональный трекер</a>
+                {% if session.user_id %}
+            <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-link">Вход в систему</a>
+        {% endif %}
     </div>
+
     <div class="profile">
-        <img src="avatar.png" alt="Аватар" class="avatar"> <!-- Увеличенная аватарка -->
+        <img src={{icon}} alt="Аватар" class="avatar">
         <div class="profile-details">
-            <h2>{{ user_fullname }}</h2> <!-- Изменено на user_fullname -->
-            <p>Email: {{ user_email }}</p> <!-- Изменено на user_email -->
+            <h2>{{ user_fullname }}</h2>
+            <p>Email: {{ user_email }}</p>
+            <a href="/edit_profile" class="edit-button">Редактировать профиль</a>
         </div>
     </div>
-</body>
 
+    <div class="news-section">
+        <h3>Последние новости</h3>
+        <div class="news-list">
+            {% for news_item in news %}
+                <div class="news-card">
+                    <h4>{{ news_item.name }}</h4>
+                    <p>{{ news_item.content }}</p>
+                    <small>{{ news_item.date }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2023 Ваш сайт. Все права защищены.</p>
+    </div>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            background-image: url('background.jpg'); /* Фоновое изображение */
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        header {
+            background: rgba(51, 51, 51, 0.8);
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .navigation {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .nav-link {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #fff;
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: #007bff; /* Цвет при наведении */
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+        .edit-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s; /* Плавный переход */
+        }
+        .edit-button:hover {
+            background-color: #0056b3; /* Цвет при наведении */
+        }
+        .news-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .news-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            transition: transform 0.2s; /* Плавный переход */
+        }
+        .news-card:hover {
+            transform: scale(1.02); /* Увеличение при наведении */
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</body>
 </html>

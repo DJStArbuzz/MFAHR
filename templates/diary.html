@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Дневник ученика</title>
      <style>
         body {
@@ -84,20 +86,29 @@
 </head>
 <body>
      <header>
-        <h1>Дневник ученика</h1>
+        {% if role == 4 %}
+            <h1>Дневник ученика</h1>
+        {% else %}
+         <h1>Дневник класса</h1>
+        {% endif %}
     </header>
 
      <div class="navigation">
-                 <a href="index" class="nav-link">Главная</a>
-        <a href="user_table" class="nav-link">Личный кабинет</a>
-        <a href="courses" class="nav-link">Курсы</a>
-        <a href="emotional_tracker" class="nav-link">Эмоциональный трекер</a>
+        <a href="index" class="nav-link"><i class="fas fa-home"></i> Главная</a>
+        <a href="user_table" class="nav-link"><i class="fas fa-user"></i> Личный кабинет</a>
+        <a href="diary" class="nav-link"><i class="fas fa-book"></i> Дневник</a>
+        <a href="courses" class="nav-link"><i class="fas fa-graduation-cap"></i> Курсы</a>
+        <a href="emotional_tracker" class="nav-link"><i class="fas fa-smile"></i> Эмоциональный трекер</a>
+                {% if session.user_id %}
+            <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-link">Вход в систему</a>
+        {% endif %}
     </div>
 
     <div class="tabs">
         <div class="tab" onclick="showPanel('homework')">Домашние задания</div>
         <div class="tab active" onclick="showPanel('grades')">Оценки</div>
-        <div class="tab" onclick="showPanel('performance')">Успеваемость</div>
     </div>
 
     <div id="homework" class="panel">
@@ -160,84 +171,39 @@
         </table>
     </div>
 
-    <div id="grades" class="panel active">
-        <h2>Оценки ученика</h2>
+   <div id="grades" class="panel active">
+    <h2>Оценки ученика</h2>
 
-        <table>
+    <table>
         <tr>
             <th>Название предмета</th>
             <th>Среднее значение</th>
-            <th>Оценки</th>
+            <th>Оценка 1</th>
+            <th>Оценка 2</th>
+            <th>Оценка 3</th>
+            <th>Оценка 4</th>
+            <th>Оценка 5</th>
+            <th>Оценка 6</th>
+            <th>Оценка 7</th>
+            <th>Оценка 8</th>
+            <th>Оценка 9</th>
+            <th>Оценка 10</th>
         </tr>
         {% for subject, marks in grades_data.items() %}
         <tr>
             <td>{{ subject }}</td>
             <td>{{ average_grades[subject] | round(2) if average_grades[subject] > 0 else 'Нет оценок' }}</td>
-            <td>{{ marks | join(', ') }}</td>
+            {% for mark in marks %}
+                <td>{{ mark }}</td>
+            {% endfor %}
+            {% for i in range(marks|length, 10) %}
+                <td></td>
+            {% endfor %}
         </tr>
         {% endfor %}
     </table>
-    </div>
+</div>
 
-    <div id="performance" class="panel">
-        <h2>Успеваемость ученика</h2>
-        <table>
-            <tr>
-                <th>Предмет</th>
-                <th>1 четверть</th>
-                <th>2 четверть</th>
-                <th>3 четверть</th>
-                <th>4 четверть</th>
-                <th>Годовая</th>
-                <th>Итог</th>
-            </tr>
-            <tr>
-                <td>Математика</td>
-                <td>4</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td>Литература</td>
-                <td>5</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td>География</td>
-                <td>3</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td>Физика</td>
-                <td>4</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr>
-                <td>Иностранный язык</td>
-                <td>5</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-        </table>
-    </div>
 
     <script>
         function showPanel(panelId) {

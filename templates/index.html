@@ -4,54 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная страница</title>
-     <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/s1.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .news-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Пространство между новостями */
+}
+
+.news-item {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.news-date {
+    font-size: 0.9em;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.news-title {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.news-image {
+    width: 50%;
+    height: auto;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.news-content {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.news-actions {
+    margin-top: 10px;
+}
+
+    </style>
 </head>
 <body>
     <header>
         <h1>Добро пожаловать на главную страницу!</h1>
-
-    {% if session.user_id %}
-        <p>Здравствуйте, {{ session.user_fullname }}!</p>
-        <a href="{{ url_for('logout') }}">Выход</a>  <!-- Кнопка выхода -->
-    {% else %}
-        <a href="{{ url_for('login') }}">Вход в систему</a>  <!-- Ссылка на вход -->
-    {% endif %}
+        {% if session.user_id %}
+            <p>Здравствуйте, {{ session.user_fullname }}!</p>
+        {% endif %}
     </header>
 
     <div class="navigation">
-        <a href="user_table" class="nav-link">Личный кабинет</a>
-        <a href="diary" class="nav-link">Дневник</a>
-        <a href="courses" class="nav-link">Курсы</a>
-        <a href="emotional_tracker" class="nav-link">Эмоциональный трекер</a>
+        <a href="index" class="nav-link"><i class="fas fa-home"></i> Главная</a>
+        <a href="user_table" class="nav-link"><i class="fas fa-user"></i> Личный кабинет</a>
+        <a href="diary" class="nav-link"><i class="fas fa-book"></i> Дневник</a>
+        <a href="courses" class="nav-link"><i class="fas fa-graduation-cap"></i> Курсы</a>
+        <a href="emotional_tracker" class="nav-link"><i class="fas fa-smile"></i> Эмоциональный трекер</a>
+                {% if session.user_id %}
+            <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-link">Вход в систему</a>
+        {% endif %}
     </div>
-    <div class="news-section">
-        <h2>Новости</h2>
-        <div class="news-block">
-            <div class="news-date">01.10.2023</div>
 
-            <div class="news-content">Запущен новый курс по программированию.</div>
-            <div class="news-images">
-                <img src="/static/img/photo1.jpg" alt="Фото 1" class="news-image">
-                <img src="/static/img/photo2.jpg" alt="Фото 2" class="news-image">
-                <img src="/static/img/photo3.jpg" alt="Фото 3" class="news-image">
-            </div>
+         {% if session.user_id == 1 %}
+        <h3>Управление новостями</h3>
+        <a href="{{ url_for('add_news') }}" class="nav-link">Добавить новость</a>
+{% endif %}
+
+    <div class="news-section">
+    <h2>Новости</h2>
+
+    <div class="news-container">
+        {% for item in news %}
+        <div class="news-item">
+            <div class="news-date">{{ item['date'] }}</div>
+            <div class="news-title">{{ item['name'] }}</div>
+            <img src="{{ item['image'] }}" alt="news image" class="news-image">
+            <div class="news-content">{{ item['content'] }}</div>
+            {% if session.user_id == 1 %}
+                <div class="news-actions">
+                    <br>
+                    <a href="{{ url_for('edit_news', news_id=item['id']) }}" class="nav-link">Редактировать</a>
+                    <a href="{{ url_for('delete_news', news_id=item['id']) }}" onclick="return confirm('Вы уверены, что хотите удалить эту новость?');" class="nav-link">Удалить</a>
+                </div>
+            {% endif %}
         </div>
-        <div class="news-block">
-            <div class="news-date">05.10.2023</div>
-            <div class="news-content">Внесены изменения в расписание занятий.</div>
-            <div class="news-images">
-                <img src="/static/img/photo4.jpg" alt="Фото 4" class="news-image">
-                <img src="/static/img/photo5.jpg" alt="Фото 5" class="news-image">
-            </div>
-        </div>
-        <div class="news-block">
-            <div class="news-date">10.10.2023</div>
-            <div class="news-content">Запланировано первое онлайн-мероприятие.</div>
-            <div class="news-images">
-                <img src="/static/img/photo6.jpg" alt="Фото 6" class="news-image">
-            </div>
-        </div>
+        {% endfor %}
     </div>
-    <button class="add-news-button">Добавить новость</button>
+</div>
+
 </body>
 </html>
