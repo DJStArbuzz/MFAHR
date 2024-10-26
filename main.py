@@ -18,7 +18,7 @@ def home():
 
     user_id = session['user_id']  # Получаем ID пользователя из сессии
     conn = get_db_connection()
-    user = conn.execute('SELECT last_name, first_name, patronymic, mail, role FROM users WHERE id = ?', (user_id,)).fetchone()
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, role, icon FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
 
     conn2 = get_db_connection()
@@ -126,11 +126,23 @@ def emotional_tracker():
         return redirect(url_for('login'))  # Проверка авторизации
     return render_template('emotional_tracker.html')  # Страница Эмоционального трекера
 
+
 @app.route('/courses')
 def courses():
     return render_template('courses.html')  # Страница Учебных курсов
 
+
+@app.route('/courses/example1')
+def courses1():
+    return render_template('/courses/example1.html')  # Страница Учебных курсов
+
+
+@app.route('/courses/example2')
+def courses2():
+    return render_template('/courses/example2.html')  # Страница Учебных курсов
+
 # Страница регистрации
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -162,6 +174,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -182,11 +195,13 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)  # Удаляем пользователя из сессии
     session.pop('user_fullname', None)  # Также удаляем ФИО
     return redirect(url_for('home'))
+
 
 # Страница таблицы пользователя
 @app.route('/user_table')
@@ -196,14 +211,17 @@ def user_table():
 
     user_id = session['user_id']
     conn = get_db_connection()
-    user = conn.execute('SELECT last_name, first_name, patronymic, mail, icon FROM users WHERE id = ?', (user_id,)).fetchone()
+    user = conn.execute('SELECT last_name, first_name, patronymic, mail, icon, city, age, phone FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
 
     if user:
         user_fullname = f"{user['last_name']} {user['first_name']} {user['patronymic']}"
         user_email = user['mail']
         icon = user['icon']
-        return render_template('user_table.html', user_fullname=user_fullname, user_email=user_email, icon=icon)
+        phone = user['phone']
+        age = user['age']
+        city = user['city']
+        return render_template('user_table.html', user_fullname=user_fullname, user_email=user_email, user_icon=icon, user_phone=phone, user_age=age, user_city=city)
     else:
         return redirect(url_for('home'))
 
@@ -284,6 +302,42 @@ def edit_news(news_id):
     conn.close()
 
     return render_template('edit_news.html', news=news_item)
+
+
+@app.route('/edit_table', methods=['GET', 'POST'])
+def edit_table():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    print(user['role'])
+
+    conn = get_db_connection()
+    if request.method == 'POST':
+        last_name = request.form.get('last_name')
+        first_name = request.form.get('first_name')
+        patronymic = request.form.get('patronymic')
+        mail = request.form.get('mail')
+        password = request.form.get('password')
+        icon = request.form.get('icon')
+        city = request.form.get('city')
+        phone = request.form.get('phone')
+        age = request.form.get('age')
+        conn.execute('UPDATE users SET last_name = ?, first_name = ?, patronymic = ?, mail = ?, password = ?, '
+                     'icon = ?, city = ?, phone = ?, age = ? '
+                     'WHERE id = ?', (last_name, first_name, patronymic, mail, password, icon, city, phone, age, user_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('user_table'))
+
+    user_item = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+
+    return render_template('edit_table.html', user_item = user_item)
+
 
 
 @app.route('/news')
