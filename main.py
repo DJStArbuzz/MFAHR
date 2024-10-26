@@ -20,8 +20,36 @@ def home():
 
 @app.route('/diary')
 def diary():
-    return render_template('diary.html')  # Страница Электронного дневника
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Проверка авторизации пользователя
 
+    user_id = session['user_id']  # Получаем ID пользователя из сессии
+    conn = get_db_connection()
+
+    # Получаем список предметов и оценок пользователя
+    subjects_grades = conn.execute('''
+        SELECT s.subject_name, m.mark
+        FROM subject s
+        JOIN marks_all m ON s.subject_id = m.subject_id
+        WHERE m.user_id = ?
+    ''', (user_id,)).fetchall()
+
+    conn.close()
+
+    # Обработка данных для передачи в шаблон
+    grades_data = {}
+
+    for row in subjects_grades:
+        subject_name = row['subject_name']
+        mark = row['mark']
+        if subject_name not in grades_data:
+            grades_data[subject_name] = []
+        grades_data[subject_name].append(mark)
+
+    # Подсчет среднего значения для каждого предмета
+    average_grades = {subject: sum(marks) / len(marks) if marks else 0 for subject, marks in grades_data.items()}
+
+    return render_template('diary.html', grades_data=grades_data, average_grades=average_grades)
 
 @app.route('/emotional_tracker')
 def emotional_tracker():
@@ -31,11 +59,6 @@ def emotional_tracker():
 @app.route('/courses')
 def courses():
     return render_template('courses.html')  # Страница Учебных курсов
-
-
-@app.route('/user_table')
-def user_table():
-    return render_template('user_table.html')  # Страница Учебных курсов
 
 
 # Страница регистрации
@@ -97,6 +120,29 @@ def logout():
     session.pop('user_id', None)  # Удаляем пользователя из сессии
     session.pop('user_fullname', None)  # Также удаляем ФИО
     return redirect(url_for('home'))
+
+# Страница таблицы пользователя
+@app.route('/user_table')
+def user_table():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Перенаправление на страницу входа, если пользователь не авторизовался
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    user = conn.execute('SELECT last_name, first_name, mail FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+
+    if user:
+        user_fullname = f"{user['last_name']} {user['first_name']}"
+        print(user_fullname)
+        user_email = user['mail']
+        return render_template('user_table.html', user_fullname=user_fullname, user_email=user_email)
+    else:
+        return redirect(url_for('home'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 if __name__ == '__main__':

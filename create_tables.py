@@ -1,69 +1,45 @@
 import sqlite3
 
-# Подключение к базе данных
+# Подключаемся к базе данных
 conn = sqlite3.connect('db/school.db')
 cursor = conn.cursor()
 
-# Создание таблицы grades, если она не существует
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS grades (
-    id INTEGER PRIMARY KEY,
-    student_id INTEGER,
-    num INTEGER,
-    date TEXT,
-    title TEXT
-)
-''')
+# Замените 'user_id' на ID текущего пользователя, который зашел в аккаунт
+user_id = 2  # Пример ID пользователя
+user_role = cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,)).fetchone()
 
-# Создание таблицы users, если она не существует
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    role INTEGER,
-    last_name TEXT,
-    first_name TEXT,
-    patronymic TEXT
-)
-''')
+if user_role and user_role[0] == 4:
+    # Получаем предметы пользователя
+    subjects_ids = cursor.execute("SELECT subjects FROM users WHERE id = ?", (user_id,)).fetchone()[0]
 
+    if subjects_ids:
+        subject_ids = map(int, subjects_ids.split())
 
-# Функция для добавления оценок
-def add_grade(student_id, num, date, title):
-    cursor.execute('''
-    INSERT INTO grades (student_id, num, date, title)  -- Изменено имя таблицы на grades
-    VALUES (?, ?, ?, ?)
-    ''', (student_id, num, date, title))
-    conn.commit()
+        for subject_id in subject_ids:
+            # Получаем название предмета
+            subject_info = cursor.execute("SELECT subject_name FROM subject WHERE subject_id = ?",
+                                          (subject_id,)).fetchone()
+            if subject_info:
+                subject_name = subject_info[0]
 
+                # Получаем оценки по предмету
+                marks = cursor.execute(
+                    "SELECT mark, mark_date FROM marks_all WHERE user_id = ? AND subject_id = ?",
+                    (user_id, subject_id)
+                ).fetchall()
 
-# Функция для добавления пользователей
-def add_user(role, last_name, first_name, patronymic=None):
-    cursor.execute('''
-    INSERT INTO users (role, last_name, first_name, patronymic)
-    VALUES (?, ?, ?, ?)
-    ''', (role, last_name, first_name, patronymic))
-    conn.commit()
+                # Выводим предмет и оценки
+                print(f"Предмет: {subject_name}")
+                if marks:
+                    for mark in marks:
+                        print(f"Оценка: {mark[0]}, Дата: {mark[1]}")
+                else:
+                    print("Оценок нет.")
+                print()  # Пустая строка для разделения предметов
+    else:
+        print("У пользователя нет предметов.")
+else:
+    print("У вас нет доступа к дневнику.")
 
-
-# Пример добавления пользователя и оценки
-# add_user(1, 'Нестеров', 'Павел', 'Николаевич')
-# add_user(0, 'Соколова', 'Анастасия', '')
-# add_user(0, 'Реутов', 'Максим', '')
-# add_user(3, 'Маслеников', 'Игорь', 'Николаевич')
-# add_user(3, 'Погребняк', 'Максим', 'Анатольевич')
-# add_user(3, 'Костерин', 'Дмитрий', 'Сергеевич')
-
-add_grade(6, 5, '2023-10-01', 'Mathematics test')
-add_grade(7, 5, '2023-10-02', 'Mathematics test')
-add_grade(7, 5, '2023-10-02', 'Mathematics test')
-add_grade(7, 5, '2023-10-03', 'Mathematics test')
-add_grade(8, 5, '2023-10-03', 'Mathematics test')
-add_grade(8, 5, '2023-10-03', 'Mathematics test')
-add_grade(5, 5, '2023-10-01', 'Mathematics test')
-add_grade(8, 5, '2023-10-02', 'Mathematics test')
-add_grade(10, 5, '2023-10-02', 'Mathematics test')
-add_grade(10, 5, '2023-10-03', 'Mathematics test')
-add_grade(8, 5, '2023-10-03', 'Mathematics test')
-add_grade(8, 5, '2023-10-03', 'Mathematics test')
-# Закрытие соединения
+# Закрываем соединение с базой данных
 conn.close()
