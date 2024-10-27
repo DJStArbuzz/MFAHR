@@ -3,9 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-
     <title>Учебные курсы</title>
-     <link rel="stylesheet" type="text/css" href="/static/css/s2.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            margin: 20px;
+        }
+        .sidebar {
+            width: 25%;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
+        }
+        h2 {
+            color: #007bff;
+        }
+        .exit-button {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .exit-button:hover {
+            background-color: #218838;
+        }
+        .subject-block {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #e9ecef;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -34,12 +88,12 @@
         </div>
         <div class="content">
             <section id="math" class="subject-block">
-                <h2><a href="/courses/example1">Математика для 5 класса</a></h2>
+                <h2>Математика для 5 класса</h2>
                 <p><strong>Преподаватель:</strong> Иванов И.И.</p>
                 <p><strong>Аннотация:</strong> Курс охватывает основные темы математики, включая арифметику, геометрию и статистику. Ученики научатся решать задачи и применять математические концепции в повседневной жизни.</p>
             </section>
             <section id="science" class="subject-block">
-                <h2><a href="/courses/example2">Наука для 5 класса</a></h2>
+                <h2>Наука для 5 класса</h2>
                 <p><strong>Преподаватель:</strong> Петров С.С.</p>
                 <p><strong>Аннотация:</strong> Этот курс познакомит учащихся с основами естественных наук, таких как биология, химия и физика, с акцентом на эксперименты и практические занятия.</p>
             </section>
